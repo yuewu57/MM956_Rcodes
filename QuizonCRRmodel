@@ -46,3 +46,4 @@ American_option = function(S, K, N,  r,u,d, type){
   }
   option_tree
 }
+American_put = American_option(60, 62, 3,  0.03, 0.2, -0.1, "put")
