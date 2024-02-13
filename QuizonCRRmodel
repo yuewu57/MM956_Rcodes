@@ -1,0 +1,48 @@
+stock_tree = function(S, N, u, d){
+  tree = matrix(0, nrow=N+1, ncol=N+1)
+  
+  for(i in 1:(N+1)){
+    for(j in 1:i){
+      tree[i,j] = S * (1+u)^(j-1) *(1+d)^((i-1)-(j-1))
+    }
+  }
+  tree
+}
+
+p = function(r,  u, d){
+  (r - d)/(u - d)
+}
+
+American_option = function(S, K, N,  r,u,d, type){
+  stock_tree = stock_tree(S, N, u, d)
+  p = p(r, u, d)
+  option_tree = matrix(0, nrow=nrow(stock_tree), ncol=ncol(stock_tree))
+  
+  if(type == "call"){
+    #Terminal nodes
+    option_tree[nrow(option_tree),] = pmax(stock_tree[nrow(stock_tree),]-K, 0)
+    
+    #Backward operations
+    for(i in (nrow(option_tree)-1):1){
+      for(j in 1:i){
+        NO = option_tree[i,j] =   (p * option_tree[i+1,j+1] + (1-p) * option_tree[i+1,j])/(1+r)
+        EX = pmax(stock_tree[i,j]-K, 0)
+        option_tree[i,j] = max(NO, EX)
+      }
+    }
+  }
+  else if(type == "put"){
+    #Terminal nodes
+    option_tree[nrow(option_tree),] = pmax(K-stock_tree[nrow(stock_tree),], 0)
+    
+    #Backward operations
+    for(i in (nrow(option_tree)-1):1){
+      for(j in 1:i){
+        NO = option_tree[i,j] =  (p * option_tree[i+1,j+1] + (1-p) * option_tree[i+1,j])/(1+r)
+        EX = pmax(K-stock_tree[i,j], 0)
+        option_tree[i,j] = max(NO, EX)
+      }
+    }
+  }
+  option_tree
+}
